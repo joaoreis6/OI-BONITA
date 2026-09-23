@@ -1,0 +1,74 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum ProductAvailability {
+  AVAILABLE
+  OUT_OF_STOCK
+  MADE_TO_ORDER
+}
+
+enum ProductStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model Category {
+  id        String    @id @default(cuid())
+  name      String
+  slug      String    @unique
+  isActive  Boolean   @default(true)
+  products  Product[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([isActive, name])
+}
+
+model Product {
+  id           String               @id @default(cuid())
+  name         String
+  slug         String               @unique
+  description  String?
+  price        Decimal?             @db.Decimal(10, 2)
+  availability ProductAvailability @default(AVAILABLE)
+  stock        Int                  @default(0)
+  status       ProductStatus        @default(DRAFT)
+  categoryId   String
+  category     Category             @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  images       ProductImage[]
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+
+  @@index([categoryId, status])
+  @@index([status, createdAt])
+}
+
+model ProductImage {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url       String
+  altText   String?
+  position  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([productId, position])
+}
+
+model Admin {
+  id                    String    @id @default(cuid())
+  email                 String    @unique
+  passwordHash          String
+  isActive              Boolean   @default(true)
+  failedLoginAttempts   Int       @default(0)
+  lockedUntil           DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+}
