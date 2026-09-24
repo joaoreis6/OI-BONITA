@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { StoreContext } from "@/features/store/store-context";
 import {
   addCartItem,
@@ -30,6 +30,20 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [catalogError, setCatalogError] = useState(false);
   const [catalogLoaded, setCatalogLoaded] = useState(false);
   const [actionFeedback, setActionFeedback] = useState<{ kind: "success" | "error"; message: string } | null>(null);
+  const cartItemsRef = useRef(cartItems);
+  const cartProductIdsKey = cartItems.map((item) => item.productId).sort().join(",");
+  const favoriteIdsKey = [...favoriteIds].sort().join(",");
+  const trackedProductIdsKey = useMemo(() => {
+    const ids = new Set([
+      ...cartProductIdsKey.split(",").filter(Boolean),
+      ...favoriteIdsKey.split(",").filter(Boolean),
+    ]);
+    return Array.from(ids).sort().join(",");
+  }, [cartProductIdsKey, favoriteIdsKey]);
+
+  useEffect(() => {
+    cartItemsRef.current = cartItems;
+  }, [cartItems]);
 
   useEffect(() => {
     queueMicrotask(() => {
@@ -46,7 +60,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!isHydrated) return;
-    const ids = Array.from(new Set([...cartItems.map((item) => item.productId), ...favoriteIds])).slice(0, 100);
+    const ids = trackedProductIdsKey ? trackedProductIdsKey.split(",").slice(0, 100) : [];
     if (ids.length === 0) {
       queueMicrotask(() => {
         setPublicProducts([]);
@@ -65,12 +79,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     })).then((batches) => batches.flat())
       .then((currentProducts) => {
         if (cancelled) return;
-        const restoredCart = restoreCart(cartItems, currentProducts);
-        if (JSON.stringify(restoredCart) !== JSON.stringify(cartItems)) {
+        const snapshot = cartItemsRef.current;
+        const restoredCart = restoreCart(snapshot, currentProducts);
+        if (JSON.stringify(restoredCart) !== JSON.stringify(snapshot)) {
           const activeIds = new Set(currentProducts.map((product) => product.id));
           setActionFeedback({
             kind: "error",
-            message: cartItems.some((item) => !activeIds.has(item.productId))
+            message: snapshot.some((item) => !activeIds.has(item.productId))
               ? "Um ou mais produtos saíram do catálogo e foram removidos do carrinho."
               : "O estoque mudou e a quantidade foi ajustada no carrinho.",
           });
@@ -85,7 +100,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       })
       .catch(() => { if (!cancelled) { setCatalogError(true); setCatalogLoaded(true); } });
     return () => { cancelled = true; };
-  }, [cartItems, favoriteIds, isHydrated]);
+  }, [trackedProductIdsKey, isHydrated]);
 
   useEffect(() => {
     if (!isHydrated) return;
