@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { CatalogFilter } from "@/components/catalog-filter";
 import { ProductGrid } from "@/components/product-grid";
+import { catalogErrorMessage, resolveCatalogFailure } from "@/lib/catalog-error";
 import { listPublicCategories, listPublicProducts } from "@/services/public-catalog-service";
 import { filterPublicProducts, type CatalogOrder } from "@/services/catalog-filter-service";
 import type { Category, Product } from "@/schemas/catalog";
@@ -20,8 +21,9 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
   let products: Product[];
   let categories: Category[];
   try { [products, categories] = await Promise.all([listPublicProducts(), listPublicCategories()]); }
-  catch {
-    return <main id="main-content"><section className="page-hero"><p className="eyebrow">Oi, Bonita!</p><h1>Catálogo</h1><p>Não foi possível carregar o catálogo neste momento.</p></section><section className="container catalog-section"><p role="alert">Tente novamente em instantes.</p></section></main>;
+  catch (error) {
+    const failure = resolveCatalogFailure(error);
+    return <main id="main-content"><section className="page-hero"><p className="eyebrow">Oi, Bonita!</p><h1>Catálogo</h1><p>Não foi possível carregar o catálogo neste momento.</p></section><section className="container catalog-section"><p role="alert">{catalogErrorMessage(failure)}</p></section></main>;
   }
   const query = params.q?.trim() ?? "";
   const category = params.categoria?.trim() ?? "";

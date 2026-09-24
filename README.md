@@ -16,6 +16,7 @@ cp .env.example .env
 # Configure DATABASE_URL, NEXTAUTH_SECRET e NEXTAUTH_URL no .env
 pnpm db:validate
 pnpm db:migrate
+pnpm db:seed-categories   # categorias oficiais (após migrate)
 pnpm admin:create
 pnpm dev
 ```
@@ -32,6 +33,7 @@ Somente produtos com `status: PUBLISHED` e categoria ativa aparecem nas páginas
 
 - `/` — home com categorias e destaques
 - `/catalogo` — busca, filtros e ordenação
+- `/categorias` — listagem de categorias
 - `/categoria/[slug]` — produtos por categoria
 - `/produto/[slug]` — detalhe do produto
 

@@ -13,7 +13,7 @@ import { useFavorites } from "@/hooks/use-favorites";
 const navigation = [
   { label: "Início", href: "/" },
   { label: "Catálogo", href: "/catalogo" },
-  { label: "Categorias", href: "/#categorias" },
+  { label: "Categorias", href: "/categorias" },
 ];
 
 export function SiteHeader() {
@@ -28,7 +28,7 @@ export function SiteHeader() {
         key={item.label}
         className={className}
         href={item.href}
-        aria-current={pathname === item.href ? "page" : undefined}
+        aria-current={pathname === item.href || (item.href === "/categorias" && pathname.startsWith("/categoria")) ? "page" : undefined}
         onClick={() => setMenuOpen(false)}
       >
         {item.label}

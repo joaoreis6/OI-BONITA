@@ -86,14 +86,19 @@ Arquivo `netlify.toml` na raiz:
 
 Sem `NEXT_PUBLIC_SITE_URL`, o `robots.txt` e o `sitemap.xml` geram URLs com `localhost` — **corrija no painel antes do próximo deploy**.
 
-**Migrations após configurar `DATABASE_URL`:**
+**Migrations e dados iniciais após configurar `DATABASE_URL`:**
 
-Execute uma vez (localmente com `DATABASE_URL` de produção, ou via Netlify CLI / build hook):
+Execute uma vez (localmente com `DATABASE_URL` de produção exportada no terminal):
 
 ```bash
 pnpm db:deploy
-pnpm admin:create
+pnpm db:seed-categories    # sincroniza as 6 categorias oficiais (idempotente)
+pnpm admin:create          # cria a primeira administradora (interativo)
 ```
+
+**Diagnóstico atual (produção):** sem `DATABASE_URL` no Netlify, Home/Catálogo/Categorias falham ao consultar o PostgreSQL e `/api/catalog/products` retorna 503. Isso **não** é resolvido no frontend — configure as variáveis e redeploy.
+
+**PostgreSQL recomendado para Netlify:** Neon ou Supabase com URL **pooled** (compatível com serverless). Use `?sslmode=require` quando exigido pelo provedor.
 
 **Deploy:** conectar repositório GitHub `joaoreis6/OI-BONITA` ao site Netlify; push em `main` dispara build.
 

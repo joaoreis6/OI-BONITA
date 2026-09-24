@@ -20,7 +20,7 @@ export function SiteFooter({ categories }: { categories: Category[] }) {
             <nav className="footer-links" aria-label="Links do rodapé">
               <Link href="/">Início</Link>
               <Link href="/catalogo">Catálogo</Link>
-              <Link href="/#categorias">Categorias</Link>
+              <Link href="/categorias">Categorias</Link>
             </nav>
           </div>
           <div>

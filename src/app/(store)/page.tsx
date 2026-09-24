@@ -5,6 +5,7 @@ import { ProductGrid } from "@/components/product-grid";
 import { ArrowRightIcon, ChatIcon, InstagramIcon, SparkleIcon, TruckIcon } from "@/components/icons";
 import { brandAssets } from "@/config/brand";
 import { siteConfig } from "@/config/site";
+import { catalogErrorMessage, resolveCatalogFailure } from "@/lib/catalog-error";
 import { listPublicCategories, listPublicFeaturedProducts } from "@/services/public-catalog-service";
 import type { Category, Product } from "@/schemas/catalog";
 
@@ -13,9 +14,9 @@ export const dynamic = "force-dynamic";
 export default async function HomePage() {
   let categories: Category[] = [];
   let featuredProducts: Product[] = [];
-  let catalogError = false;
+  let catalogFailure: ReturnType<typeof resolveCatalogFailure> | null = null;
   try { [categories, featuredProducts] = await Promise.all([listPublicCategories(), listPublicFeaturedProducts()]); }
-  catch { catalogError = true; }
+  catch (error) { catalogFailure = resolveCatalogFailure(error); }
 
   return (
     <main id="main-content">
@@ -55,18 +56,18 @@ export default async function HomePage() {
             </div>
             <Link className="text-link" href="/catalogo">Ver catálogo completo <ArrowRightIcon width={17} height={17} /></Link>
           </div>
-          {categories.length > 0 ? <div className="category-grid">{categories.map((category, index) => <CategoryCard key={category.id} category={category} index={index} />)}</div> : <p role={catalogError ? "alert" : undefined}>{catalogError ? "Não foi possível carregar as categorias agora. Tente novamente em instantes." : "Novas categorias estarão disponíveis em breve."}</p>}
+          {categories.length > 0 ? <div className="category-grid">{categories.map((category, index) => <CategoryCard key={category.id} category={category} index={index} />)}</div> : <p role={catalogFailure ? "alert" : "status"}>{catalogFailure ? catalogErrorMessage(catalogFailure) : "Novas categorias estarão disponíveis em breve."}</p>}
         </div>
       </section>
 
-      {(featuredProducts.length > 0 || catalogError) && (
+      {(featuredProducts.length > 0 || catalogFailure) && (
         <section className="section" aria-labelledby="featured-heading">
           <div className="container">
             <div className="section-heading">
               <div><p className="eyebrow">Recém-cadastrados</p><h2 className="section-title" id="featured-heading">Novidades no catálogo</h2></div>
               <Link className="text-link" href="/catalogo">Ver todos <ArrowRightIcon width={17} height={17} /></Link>
             </div>
-            {catalogError ? <p role="alert">Não foi possível carregar os produtos agora. Tente novamente em instantes.</p> : <ProductGrid products={featuredProducts} />}
+            {catalogFailure ? <p role="alert">{catalogErrorMessage(catalogFailure)}</p> : <ProductGrid products={featuredProducts} />}
           </div>
         </section>
       )}
