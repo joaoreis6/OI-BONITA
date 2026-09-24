@@ -115,15 +115,25 @@ pnpm build
 
 Registros de QA: [`docs/QA.md`](docs/QA.md).
 
-## Produção
+## Produção (Netlify)
 
-Guia de implantação: [`docs/PRODUCTION.md`](docs/PRODUCTION.md).
+URL: **https://oibonita-oficial.netlify.app**
+
+Guia completo: [`docs/PRODUCTION.md`](docs/PRODUCTION.md).
+
+Configure no painel Netlify (Environment variables):
+
+- `NEXT_PUBLIC_SITE_URL=https://oibonita-oficial.netlify.app`
+- `NEXTAUTH_URL=https://oibonita-oficial.netlify.app`
+- `DATABASE_URL` — PostgreSQL real (não versionar)
+- `NEXTAUTH_SECRET` — mínimo 32 caracteres (não versionar)
+
+Build: `pnpm build` (ver `netlify.toml`).
 
 **Limitações conhecidas em produção:**
 
 - Storage de imagens externo ainda precisa ser configurado para uploads administrativos
-- Domínio final deve ser definido via `NEXT_PUBLIC_SITE_URL` e `NEXTAUTH_URL`
-- PostgreSQL real, secrets e provedor de deploy são responsabilidade do ambiente
+- Catálogo e admin exigem `DATABASE_URL` e `NEXTAUTH_SECRET` no Netlify
 
 ## Estrutura
 

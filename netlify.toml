@@ -1,0 +1,9 @@
+# Oi, Bonita! — Netlify (Next.js 16 via OpenNext adapter automático)
+# https://docs.netlify.com/build/frameworks/framework-setup-guides/nextjs/overview/
+
+[build]
+  command = "pnpm build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "20"

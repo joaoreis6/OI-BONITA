@@ -1,7 +1,11 @@
 import { z } from "zod";
 
+const defaultSiteUrl = process.env.NODE_ENV === "production"
+  ? undefined
+  : "http://localhost:3000";
+
 const environmentSchema = z.object({
-  NEXT_PUBLIC_SITE_URL: z.url().default("http://localhost:3000"),
+  NEXT_PUBLIC_SITE_URL: z.url(),
   NEXTAUTH_URL: z.url().optional(),
   DATABASE_URL: z.url().optional(),
   NEXTAUTH_SECRET: z.string().min(32).optional(),
@@ -9,7 +13,7 @@ const environmentSchema = z.object({
 });
 
 const parsedEnvironment = environmentSchema.safeParse({
-  NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
+  NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL ?? defaultSiteUrl,
   NEXTAUTH_URL: process.env.NEXTAUTH_URL,
   DATABASE_URL: process.env.DATABASE_URL,
   NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,

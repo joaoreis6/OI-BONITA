@@ -2,11 +2,15 @@
 
 Este documento descreve o que está pronto no repositório e o que depende de configuração externa.
 
+## URL de produção (Netlify)
+
+**https://oibonita-oficial.netlify.app**
+
 ## Status
 
-**PRONTA PARA PUBLICAÇÃO, PENDENTE DE CONFIGURAÇÃO EXTERNA**
+**PARCIALMENTE CONFIGURADO** — site publicado no Netlify; variáveis de ambiente críticas ainda precisam ser configuradas no painel.
 
-O código está preparado para build e deploy. A publicação real exige infraestrutura configurada pelo operador.
+O código está preparado para build e deploy. A operação completa (catálogo, admin, SEO correto) exige PostgreSQL e secrets no Netlify.
 
 ## Checklist técnico (repositório)
 
@@ -45,7 +49,7 @@ export NEXT_PUBLIC_SITE_URL="https://..."  # domínio ou URL de produção
 
 Usado em: metadataBase, canonical, sitemap, Open Graph.
 
-**Domínio final não está definido neste repositório.** Configure via variável de ambiente.
+Produção atual: `https://oibonita-oficial.netlify.app` (via `NEXT_PUBLIC_SITE_URL` no Netlify).
 
 ### 4. Storage de imagens de produto
 
@@ -60,25 +64,47 @@ Não há integração S3/R2/Blob implementada. Opções:
 1. Implementar adapter de storage externo no serviço `product-image-storage.ts`
 2. Ou operar uploads apenas em ambiente de staging com disco persistente (não recomendado para múltiplas instâncias)
 
-### 5. Provedor de deploy
+### 5. Netlify
 
-Não especificado neste repositório. Requisitos mínimos:
+Arquivo `netlify.toml` na raiz:
 
-- Node.js 20.9+
-- PostgreSQL acessível
-- Variáveis de ambiente configuradas
-- Disco persistente **ou** storage externo para imagens de produto
+| Configuração | Valor |
+|--------------|-------|
+| Build command | `pnpm build` |
+| Publish directory | `.next` |
+| Node version | 20 |
+| Runtime Next.js | OpenNext adapter (automático pelo Netlify) |
+
+**Variáveis obrigatórias no painel Netlify** (Site settings → Environment variables):
+
+| Variável | Valor |
+|----------|-------|
+| `NEXT_PUBLIC_SITE_URL` | `https://oibonita-oficial.netlify.app` |
+| `NEXTAUTH_URL` | `https://oibonita-oficial.netlify.app` |
+| `DATABASE_URL` | URL PostgreSQL real (Neon, Supabase, etc.) |
+| `NEXTAUTH_SECRET` | Secret gerado (mín. 32 caracteres) |
+
+Sem `NEXT_PUBLIC_SITE_URL`, o `robots.txt` e o `sitemap.xml` geram URLs com `localhost` — **corrija no painel antes do próximo deploy**.
+
+**Migrations após configurar `DATABASE_URL`:**
+
+Execute uma vez (localmente com `DATABASE_URL` de produção, ou via Netlify CLI / build hook):
+
+```bash
+pnpm db:deploy
+pnpm admin:create
+```
+
+**Deploy:** conectar repositório GitHub `joaoreis6/OI-BONITA` ao site Netlify; push em `main` dispara build.
 
 ## Processo recomendado de deploy
 
-1. Clonar repositório e instalar dependências (`pnpm install`)
-2. Configurar variáveis de ambiente (ver `.env.example`)
-3. `pnpm db:deploy`
-4. `pnpm admin:create` (primeiro administrador)
-5. `pnpm build`
-6. `pnpm start` (ou comando equivalente do provedor)
-7. Validar rotas: `/`, `/catalogo`, `/admin/login`
-8. Cadastrar categorias e produtos pelo admin
+1. Configurar variáveis no painel Netlify (tabela acima)
+2. Push para `main` (build automático)
+3. `pnpm db:deploy` (com `DATABASE_URL` de produção)
+4. `pnpm admin:create` (primeiro administrador, interativo)
+5. Validar: `/`, `/catalogo`, `/robots.txt`, `/sitemap.xml`, `/admin/login`
+6. Cadastrar categorias e produtos pelo admin
 
 ## Segurança em produção
 
