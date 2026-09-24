@@ -3,8 +3,10 @@ import { spawnSync } from "node:child_process";
 import { stdout } from "node:process";
 import { getPrisma } from "@/lib/prisma";
 
-function run(command: string, args: string[]) {
-  const result = spawnSync(command, args, { stdio: "inherit", shell: process.platform === "win32" });
+function runPnpm(args: string[]) {
+  const pnpm = process.platform === "win32" ? "npx" : "pnpm";
+  const pnpmArgs = process.platform === "win32" ? ["pnpm@10.34.5", ...args] : args;
+  const result = spawnSync(pnpm, pnpmArgs, { stdio: "inherit", shell: process.platform === "win32" });
   if (result.status !== 0) process.exit(result.status ?? 1);
 }
 
@@ -29,10 +31,10 @@ async function main() {
   }
 
   stdout.write("1/3 — Aplicando migrations (pnpm db:deploy)...\n");
-  run("pnpm", ["db:deploy"]);
+  runPnpm(["db:deploy"]);
 
   stdout.write("2/3 — Sincronizando categorias oficiais (pnpm db:seed-categories)...\n");
-  run("pnpm", ["db:seed-categories"]);
+  runPnpm(["db:seed-categories"]);
 
   stdout.write("3/3 — Verificando conexão e tabelas...\n");
   await verifyDatabase();
