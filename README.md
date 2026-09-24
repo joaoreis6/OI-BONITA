@@ -35,6 +35,8 @@ Somente produtos com `status: PUBLISHED` e categoria ativa aparecem nas páginas
 - `/catalogo` — busca, filtros e ordenação
 - `/categorias` — listagem de categorias
 - `/categoria/[slug]` — produtos por categoria
+- `/sobre` — informações da loja
+- `/contato` — WhatsApp e Instagram
 - `/produto/[slug]` — detalhe do produto
 
 ### Carrinho e favoritos

@@ -66,14 +66,19 @@ test("rejects storage paths that escape or replace the storage root", () => {
   assert.throws(() => resolveProductImageStorage("C:\\workspace", "uploads/../outside"));
 });
 
-test("refuses local disk writes in production mode", async () => {
+test("refuses local disk writes in production mode without Netlify Blobs", async () => {
   const oldNodeEnv = process.env.NODE_ENV;
+  const oldNetlify = process.env.NETLIFY;
   process.env.NODE_ENV = "production";
+  delete process.env.NETLIFY;
+  delete process.env.NETLIFY_BLOBS_CONTEXT;
   try {
-    await assert.rejects(storeProductImage(file("photo.jpg", "image/jpeg", jpeg)), /disabled in production/);
+    await assert.rejects(storeProductImage(file("photo.jpg", "image/jpeg", jpeg)), /Persistent image storage is not configured/);
   } finally {
     if (oldNodeEnv === undefined) delete process.env.NODE_ENV;
     else process.env.NODE_ENV = oldNodeEnv;
+    if (oldNetlify === undefined) delete process.env.NETLIFY;
+    else process.env.NETLIFY = oldNetlify;
   }
 });
 

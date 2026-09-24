@@ -53,16 +53,11 @@ Produção atual: `https://oibonita-oficial.netlify.app` (via `NEXT_PUBLIC_SITE_
 
 ### 4. Storage de imagens de produto
 
-O upload local funciona **somente em desenvolvimento**.
+- **Desenvolvimento:** disco local em `data/product-images/`
+- **Produção no Netlify:** [Netlify Blobs](https://docs.netlify.com/build/data-and-storage/netlify-blobs/) (`@netlify/blobs`, store `oi-bonita-product-images`) — ativado automaticamente quando `NETLIFY=true` no runtime
+- **Produção fora do Netlify:** exige adapter de object storage (não implementado)
 
-Em produção (`NODE_ENV=production`), `storeValidatedProductImage()` lança erro.
-
-**Storage persistente externo ainda precisa ser configurado para produção.**
-
-Não há integração S3/R2/Blob implementada. Opções:
-
-1. Implementar adapter de storage externo no serviço `product-image-storage.ts`
-2. Ou operar uploads apenas em ambiente de staging com disco persistente (não recomendado para múltiplas instâncias)
+Não configure credenciais extras de blob no Netlify — o runtime injeta o contexto automaticamente.
 
 ### 5. Netlify
 
@@ -91,9 +86,16 @@ Sem `NEXT_PUBLIC_SITE_URL`, o `robots.txt` e o `sitemap.xml` geram URLs com `loc
 Execute uma vez (localmente com `DATABASE_URL` de produção exportada no terminal):
 
 ```bash
-pnpm db:deploy
-pnpm db:seed-categories    # sincroniza as 6 categorias oficiais (idempotente)
+pnpm production:setup      # db:deploy + db:seed-categories + verificação de conexão
 pnpm admin:create          # cria a primeira administradora (interativo)
+```
+
+Ou passo a passo:
+
+```bash
+pnpm db:deploy
+pnpm db:seed-categories
+pnpm admin:create
 ```
 
 **Diagnóstico atual (produção):** sem `DATABASE_URL` no Netlify, Home/Catálogo/Categorias falham ao consultar o PostgreSQL e `/api/catalog/products` retorna 503. Isso **não** é resolvido no frontend — configure as variáveis e redeploy.
@@ -131,8 +133,9 @@ pnpm admin:create          # cria a primeira administradora (interativo)
 | `/carrinho` | Sim |
 | `/admin/login` | Sim |
 | `/admin` | Sim (protegida) |
-| `/sobre` | **Não** |
-| `/contato` | **Não** |
+| `/sobre` | Sim |
+| `/contato` | Sim |
+| `/categorias` | Sim |
 
 Contato disponível via WhatsApp e Instagram no footer e header.
 

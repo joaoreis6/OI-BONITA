@@ -1,7 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
-
 export const MAX_PRODUCT_IMAGE_BYTES = 5 * 1024 * 1024;
 export const MAX_PRODUCT_IMAGES = 12;
 export const PRODUCT_IMAGE_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
@@ -52,6 +51,15 @@ function matchesImageSignature(bytes: Uint8Array, mimeType: ValidatedProductImag
 
 function ascii(bytes: Uint8Array, from: number, to: number) { return String.fromCharCode(...bytes.slice(from, to)); }
 
+function isNetlifyBlobStorageEnabled() {
+  return process.env.NODE_ENV === "production"
+    && (process.env.NETLIFY === "true" || Boolean(process.env.NETLIFY_BLOBS_CONTEXT));
+}
+
+async function blobStorage() {
+  return import("./product-image-blob-storage.ts");
+}
+
 export function resolveProductImageStorage(cwd = process.cwd(), relativeDirectory = process.env.PRODUCT_IMAGE_STORAGE_DIR || "product-images") {
   const segments = relativeDirectory.split(/[\\/]/);
   if (path.isAbsolute(relativeDirectory) || segments.some((segment) => segment === ".." || segment === ".") || segments.some((segment) => !segment)) {
@@ -73,14 +81,25 @@ export async function storeProductImage(file: Pick<File, "name" | "size" | "type
 }
 
 export async function storeValidatedProductImage(image: ValidatedProductImage, cwd = process.cwd(), relativeDirectory = process.env.PRODUCT_IMAGE_STORAGE_DIR || "product-images"): Promise<StoredProductImage> {
-  if (process.env.NODE_ENV === "production") throw new Error("Local image storage is disabled in production. Configure persistent object storage first.");
+  const filename = `${randomUUID()}.${image.extension}`;
+  const urlPrefix = resolveProductImageStorage(cwd, relativeDirectory).urlPrefix;
+
+  if (isNetlifyBlobStorageEnabled()) {
+    const blobs = await blobStorage();
+    await blobs.storeProductImageBlob(filename, image.bytes, image.mimeType);
+    return { url: `${urlPrefix}/${filename}`, filename };
+  }
+
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("Persistent image storage is not configured for this production environment. Deploy on Netlify or configure object storage.");
+  }
+
   const location = resolveProductImageStorage(cwd, relativeDirectory);
   await mkdir(location.directory, { recursive: true });
-  const filename = `${randomUUID()}.${image.extension}`;
   const filePath = imageFilePath(location.directory, filename);
   try { await writeFile(filePath, image.bytes, { flag: "wx", mode: 0o644 }); }
   catch (error) { await rm(filePath, { force: true }).catch(() => undefined); throw error; }
-  return { url: `${location.urlPrefix}/${filename}`, filename };
+  return { url: `${urlPrefix}/${filename}`, filename };
 }
 
 export async function removeStoredProductImage(url: string, cwd = process.cwd(), relativeDirectory = process.env.PRODUCT_IMAGE_STORAGE_DIR || "product-images"): Promise<{ managed: boolean; backup?: Uint8Array }> {
@@ -89,6 +108,13 @@ export async function removeStoredProductImage(url: string, cwd = process.cwd(),
   if (!url.startsWith(prefix)) return { managed: false };
   const filename = url.slice(prefix.length);
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.(jpg|png|webp)$/.test(filename)) return { managed: false };
+
+  if (isNetlifyBlobStorageEnabled()) {
+    const blobs = await blobStorage();
+    const backup = await blobs.removeProductImageBlob(filename);
+    return backup ? { managed: true, backup } : { managed: true };
+  }
+
   await mkdir(location.directory, { recursive: true });
   const filePath = imageFilePath(location.directory, filename);
   let backup: Uint8Array;
@@ -105,13 +131,30 @@ export async function restoreStoredProductImage(url: string, backup: Uint8Array,
   const location = resolveProductImageStorage(cwd, relativeDirectory);
   const prefix = `${location.urlPrefix}/`;
   const filename = url.startsWith(prefix) ? url.slice(prefix.length) : "";
-  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.(jpg|png|webp)$/.test(filename)) throw new Error("Image does not belong to local product storage.");
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.(jpg|png|webp)$/.test(filename)) throw new Error("Image does not belong to product storage.");
+
+  if (isNetlifyBlobStorageEnabled()) {
+    const extension = filename.split(".").at(-1);
+    const mimeType = extension === "png" ? "image/png" : extension === "webp" ? "image/webp" : "image/jpeg";
+    const blobs = await blobStorage();
+    await blobs.restoreProductImageBlob(filename, backup, mimeType);
+    return;
+  }
+
   await mkdir(location.directory, { recursive: true });
   await writeFile(imageFilePath(location.directory, filename), backup, { flag: "wx", mode: 0o644 });
 }
 
 export async function readStoredProductImage(filename: string, cwd = process.cwd(), relativeDirectory = process.env.PRODUCT_IMAGE_STORAGE_DIR || "product-images") {
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.(jpg|png|webp)$/.test(filename)) return null;
+
+  if (isNetlifyBlobStorageEnabled()) {
+    try {
+      const blobs = await blobStorage();
+      return await blobs.readProductImageBlob(filename);
+    } catch { return null; }
+  }
+
   const location = resolveProductImageStorage(cwd, relativeDirectory);
   try { return await readFile(imageFilePath(location.directory, filename)); }
   catch (error) { if (isMissingFile(error)) return null; throw error; }

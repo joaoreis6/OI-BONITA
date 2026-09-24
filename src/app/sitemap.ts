@@ -10,6 +10,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: new URL("/", base).toString(), changeFrequency: "weekly", priority: 1 },
     { url: new URL("/catalogo", base).toString(), changeFrequency: "daily", priority: 0.9 },
     { url: new URL("/categorias", base).toString(), changeFrequency: "weekly", priority: 0.85 },
+    { url: new URL("/sobre", base).toString(), changeFrequency: "monthly", priority: 0.6 },
+    { url: new URL("/contato", base).toString(), changeFrequency: "monthly", priority: 0.6 },
   ];
   try {
     const { categories, products } = await listPublicSitemapEntries();

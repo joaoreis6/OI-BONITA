@@ -14,6 +14,7 @@ const categoryPaths = ["/admin", "/admin/categorias", "/admin/produtos/novo"];
 function revalidatePublicCatalog() {
   revalidatePath("/");
   revalidatePath("/catalogo");
+  revalidatePath("/categorias");
   revalidatePath("/categoria/[slug]", "page");
   revalidatePath("/produto/[slug]", "page");
   revalidatePath("/sitemap.xml");

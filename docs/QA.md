@@ -106,7 +106,7 @@ Validação parcial via servidor de produção local (`pnpm start`, sem `DATABAS
 
 **Não validado:** interação manual completa (cliques, carrinho com produtos reais, breakpoints visuais, leitor de tela).
 
-Rotas `/sobre` e `/contato` **não existem** no projeto (fora do escopo atual).
+Rotas `/sobre`, `/contato` e `/categorias` implementadas com informações reais de `siteConfig`.
 
 ## Limitações documentadas
 
