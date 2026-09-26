@@ -22,9 +22,12 @@ export function ProductImageManager({ productId, images }: { productId: string; 
     });
   }
 
+  const hasImages = orderedImages.length > 0;
+
   return <section className="admin-panel admin-image-manager" aria-labelledby="product-images-heading">
-    <div className="admin-panel-heading admin-image-manager-heading"><div><p className="eyebrow">Fotos</p><h2 id="product-images-heading">Imagens do produto</h2><p>A primeira imagem é a principal. A ordem será preservada na galeria.</p></div><span>{images.length}/{12}</span></div>
-    {orderedImages.length === 0 ? <p className="admin-image-empty">Nenhuma imagem cadastrada ainda.</p> : <>
+    <div className="admin-panel-heading admin-image-manager-heading"><div><p className="eyebrow">Fotos</p><h2 id="product-images-heading">Fotos do produto</h2><p>Cadastre fotos em JPEG, PNG ou WebP. A primeira imagem aparece no catálogo e como principal na página do produto.</p></div><span>{images.length}/{12}</span></div>
+    {!hasImages && images.length < 12 && <UploadImageForm productId={productId} prominent />}
+    {hasImages ? <>
       <div className="admin-image-gallery">{orderedImages.map((image, index) => <article className="admin-image-card" key={image.id}>
         <div className="admin-image-preview"><Image src={image.url} alt={image.altText || "Imagem do produto"} fill sizes="(max-width: 680px) 42vw, (max-width: 1000px) 28vw, 200px" unoptimized /></div>
         <div className="admin-image-details"><strong>{index === 0 ? "Imagem principal" : `Imagem ${index + 1}`}</strong><span title={image.url}>{image.altText || image.url.split("/").at(-1)}</span></div>
@@ -41,22 +44,22 @@ export function ProductImageManager({ productId, images }: { productId: string; 
         {state.error && <Notice tone="error">{state.error}</Notice>}
         {orderedImages.some((image, index) => image.id !== images[index]?.id) && <button className="button button-outline" disabled={pending}>{pending ? "Salvando ordem…" : "Salvar ordem e imagem principal"}</button>}
       </form>
-    </>}
-    {images.length < 12 && <UploadImageForm productId={productId} />}
+    </> : null}
+    {hasImages && images.length < 12 && <UploadImageForm productId={productId} />}
   </section>;
 }
 
-function UploadImageForm({ productId }: { productId: string }) {
+function UploadImageForm({ productId, prominent = false }: { productId: string; prominent?: boolean }) {
   const [state, action, pending] = useActionState(uploadProductImageAction, emptyState);
-  return <form action={action} className="admin-image-upload">
+  return <form action={action} className={prominent ? "admin-image-upload admin-image-upload-prominent" : "admin-image-upload"} encType="multipart/form-data">
     <input type="hidden" name="productId" value={productId} />
     <div className="admin-image-upload-fields">
-      <label>Escolha uma imagem<input name="image" type="file" accept="image/jpeg,image/png,image/webp" required disabled={pending} /><small>JPEG, PNG ou WebP · até 5 MB por imagem.</small></label>
-      <label>Texto alternativo (opcional)<input name="altText" type="text" maxLength={180} placeholder="Descreva a foto do produto" disabled={pending} /></label>
+      <label>Foto do produto<input name="image" type="file" accept="image/jpeg,image/png,image/webp" required disabled={pending} /><small>JPEG, PNG ou WebP · até 5 MB por imagem.</small></label>
+      <label>Texto alternativo (opcional)<input name="altText" type="text" maxLength={180} placeholder="Ex.: Brinco dourado com pérola" disabled={pending} /></label>
     </div>
     {state.error && <Notice tone="error">{state.error}</Notice>}
-    <button className="button button-primary" disabled={pending}>{pending ? "Enviando imagem…" : "Enviar imagem"}</button>
-    {pending && <p className="admin-upload-progress" role="status">A imagem está sendo enviada e salva. Aguarde a confirmação.</p>}
+    <button className="button button-primary" disabled={pending}>{pending ? "Enviando foto…" : prominent ? "Cadastrar foto" : "Adicionar outra foto"}</button>
+    {pending && <p className="admin-upload-progress" role="status">A foto está sendo enviada. Aguarde a confirmação.</p>}
   </form>;
 }
 

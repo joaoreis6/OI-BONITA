@@ -40,6 +40,13 @@ export function SiteFooter({ categories }: { categories: Category[] }) {
               <span>{siteConfig.shippingText}</span>
             </div>
           </div>
+          <div>
+            <h2 className="footer-heading">Administração</h2>
+            <nav className="footer-links" aria-label="Acesso administrativo">
+              <Link href="/admin/login">Entrar no painel</Link>
+            </nav>
+            <p className="footer-about">Gerencie produtos, categorias e fotos da loja.</p>
+          </div>
         </div>
         <div className="footer-bottom">
           <span>© {new Date().getFullYear()} {siteConfig.name} Todos os direitos reservados.</span>

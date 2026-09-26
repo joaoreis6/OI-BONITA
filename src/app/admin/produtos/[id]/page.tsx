@@ -22,7 +22,7 @@ export default async function EditProductPage({ params, searchParams }: { params
     ? categories
     : [...categories, { id: product.categoryId, name: product.category.name }];
   return <><AdminPageHeading eyebrow="Catálogo" title="Editar produto" description="Atualize as informações do produto." />
-    {query.salvo && <Notice>Produto salvo com sucesso.</Notice>}
+    {query.salvo && <Notice>{product.images.length === 0 ? "Produto salvo. Cadastre a foto do produto na seção abaixo." : "Produto salvo com sucesso."}</Notice>}
     {query.imagem === "adicionada" && <Notice>Imagem enviada e adicionada à galeria.</Notice>}
     {query.imagem === "ordem-salva" && <Notice>Ordem salva. A primeira foto está definida como imagem principal.</Notice>}
     {query.imagem === "removida" && <Notice>Imagem removida da galeria.</Notice>}

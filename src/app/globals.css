@@ -138,7 +138,11 @@ body {
 .admin-image-error { flex-basis: 100%; color: #9a2f44; font-size: .7rem; line-height: 1.4; }
 .admin-image-order-form { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 15px; }
 .admin-image-order-form .admin-notice { flex-basis: 100%; }
+.admin-image-hint { margin-top: 22px; }
+.admin-image-hint h2 { margin: 0; color: var(--color-wine); font-family: var(--font-editorial); font-size: 1.35rem; font-weight: 400; }
+.admin-image-hint .admin-muted { margin: 8px 0 0; max-width: 560px; }
 .admin-image-upload { display: grid; gap: 14px; margin-top: 19px; border-top: 1px solid var(--color-border); padding-top: 19px; }
+.admin-image-upload-prominent { margin-top: 0; border-top: 0; padding-top: 0; border: 1px dashed #ddcdd4; border-radius: 10px; padding: 18px; background: #fbf5f7; }
 .admin-image-upload-fields { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 13px; }
 .admin-image-upload label { display: grid; align-content: start; gap: 7px; color: #51434a; font-size: .77rem; font-weight: 700; }
 .admin-image-upload input { width: 100%; min-width: 0; min-height: 43px; border: 1px solid #ddcdd4; border-radius: 7px; padding: 9px; background: var(--color-white); color: var(--color-text); font: inherit; font-size: .77rem; }
@@ -836,7 +840,7 @@ select {
 
 .footer-main {
   display: grid;
-  grid-template-columns: 1.2fr 0.7fr 0.9fr 1fr;
+  grid-template-columns: 1.2fr 0.7fr 0.9fr 1fr 0.85fr;
   gap: 56px;
   padding-bottom: 44px;
 }

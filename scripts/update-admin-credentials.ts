@@ -1,7 +1,8 @@
 import "dotenv/config";
 import { stdout } from "node:process";
 import { getPrisma } from "@/lib/prisma";
-import { adminLoginSchema, hashAdminPassword } from "@/services/admin-auth-service";
+import { adminAuthRepository } from "@/repositories/admin-auth-repository";
+import { adminLoginSchema, authenticateAdmin, hashAdminPassword, verifyAdminPassword } from "@/services/admin-auth-service";
 
 async function main() {
   const email = process.env.ADMIN_BOOTSTRAP_EMAIL?.trim();
@@ -26,16 +27,44 @@ async function main() {
       process.exitCode = 1;
       return;
     }
+    const passwordHash = await hashAdminPassword(parsed.data.password);
+    if (!(await verifyAdminPassword(parsed.data.password, passwordHash))) {
+      stdout.write("Falha interna: a senha gerada não passou na verificação.\n");
+      process.exitCode = 1;
+      return;
+    }
+
     await prisma.admin.update({
       where: { id: admin.id },
       data: {
         email: parsed.data.email,
-        passwordHash: await hashAdminPassword(parsed.data.password),
+        passwordHash,
         failedLoginAttempts: 0,
         lockedUntil: null,
         isActive: true,
       },
     });
+
+    const stored = await prisma.admin.findUnique({
+      where: { id: admin.id },
+      select: { email: true, passwordHash: true },
+    });
+    if (!stored || !(await verifyAdminPassword(parsed.data.password, stored.passwordHash))) {
+      stdout.write("Falha: a senha não foi persistida corretamente no banco.\n");
+      process.exitCode = 1;
+      return;
+    }
+
+    const identity = await authenticateAdmin(
+      { email: parsed.data.email, password: parsed.data.password },
+      adminAuthRepository,
+    );
+    if (!identity) {
+      stdout.write("Falha: credenciais não autenticam após salvar.\n");
+      process.exitCode = 1;
+      return;
+    }
+
     stdout.write(`Credenciais do administrador atualizadas para ${parsed.data.email}.\n`);
   } finally {
     await prisma.$disconnect();
