@@ -13,24 +13,35 @@ export function ProductForm({ categories, product }: { categories: { id: string;
   const [slug, setSlug] = useState(product?.slug ?? "");
   const [slugEdited, setSlugEdited] = useState(Boolean(product?.slug));
   const [name, setName] = useState(product?.name ?? "");
+  const [intent, setIntent] = useState<"save" | "publish" | null>(null);
   const formAction = action as (formData: FormData) => void;
-  return <form action={formAction} className="admin-form admin-product-form">
-    {product && <input type="hidden" name="id" value={product.id} />}
-    <div className="admin-form-grid">
-      <label>Nome do produto<input name="name" required maxLength={120} value={name} onChange={(event) => { setName(event.target.value); if (!slugEdited) setSlug(makeSlug(event.target.value)); }} /></label>
-      <label>Slug<input name="slug" required maxLength={140} value={slug} onChange={(event) => { setSlug(event.target.value); setSlugEdited(true); }} /><small>Endereço amigável, sem espaços ou acentos.</small></label>
-      <label className="admin-form-wide">Descrição<textarea name="description" maxLength={5000} rows={5} defaultValue={product?.description ?? ""} /><small>Até 5.000 caracteres.</small></label>
-      <label>Preço (R$)<input name="price" type="text" inputMode="decimal" required placeholder="129,90" defaultValue={product?.price ?? ""} /><small>Use vírgula ou ponto e até duas casas decimais.</small></label>
-      <label>Categoria<select name="categoryId" required defaultValue={product?.categoryId ?? ""}><option value="" disabled>Selecione uma categoria</option>{categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}</select></label>
-      <label>Estoque atual<input name="stock" type="number" min="0" max="999999999" step="1" required defaultValue={product?.stock ?? 0} /><small>Quantidade inteira; não controla a disponibilidade automaticamente.</small></label>
-      <label>Disponibilidade<select name="availability" defaultValue={product?.availability ?? "AVAILABLE"}><option value="AVAILABLE">Disponível</option><option value="OUT_OF_STOCK">Sem estoque</option><option value="MADE_TO_ORDER">Sob encomenda</option></select></label>
-    </div>
-    <label className="admin-check"><input name="isPublished" type="checkbox" defaultChecked={product?.isPublished ?? false} />Publicado</label>
-    {state.error && <Notice tone="error">{state.error}</Notice>}
-    {state.fieldErrors && <Notice tone="error">{Object.values(state.fieldErrors).flat()[0]}</Notice>}
-    <div className="admin-form-actions"><Link className="button button-outline" href="/admin/produtos">Cancelar</Link><button className="button button-primary" disabled={pending}>{pending ? "Salvando…" : "Salvar produto"}</button></div>
-  </form>;
 
+  return (
+    <form action={formAction} className="admin-form admin-product-form">
+      {product && <input type="hidden" name="id" value={product.id} />}
+      <div className="admin-form-grid">
+        <label>Nome do produto<input name="name" required maxLength={120} value={name} onChange={(event) => { setName(event.target.value); if (!slugEdited) setSlug(makeSlug(event.target.value)); }} /></label>
+        <label>Slug<input name="slug" required maxLength={140} value={slug} onChange={(event) => { setSlug(event.target.value); setSlugEdited(true); }} /><small>Endereço amigável, sem espaços ou acentos.</small></label>
+        <label className="admin-form-wide">Descrição<textarea name="description" maxLength={5000} rows={5} defaultValue={product?.description ?? ""} /><small>Até 5.000 caracteres.</small></label>
+        <label>Preço (R$)<input name="price" type="text" inputMode="decimal" required placeholder="129,90" defaultValue={product?.price ?? ""} /><small>Use vírgula ou ponto e até duas casas decimais.</small></label>
+        <label>Categoria<select name="categoryId" required defaultValue={product?.categoryId ?? ""}><option value="" disabled>Selecione uma categoria</option>{categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}</select></label>
+        <label>Estoque atual<input name="stock" type="number" min="0" max="999999999" step="1" required defaultValue={product?.stock ?? 0} /><small>Quantidade inteira; não controla a disponibilidade automaticamente.</small></label>
+        <label>Disponibilidade<select name="availability" defaultValue={product?.availability ?? "AVAILABLE"}><option value="AVAILABLE">Disponível</option><option value="OUT_OF_STOCK">Sem estoque</option><option value="MADE_TO_ORDER">Sob encomenda</option></select></label>
+      </div>
+      {state.error && <Notice tone="error">{state.error}</Notice>}
+      {state.fieldErrors && <Notice tone="error">{Object.values(state.fieldErrors).flat()[0]}</Notice>}
+      <p className="admin-form-save-hint">Salvar guarda o produto como rascunho. Publicar exibe na loja.</p>
+      <div className="admin-form-actions">
+        <Link className="button button-outline" href="/admin/produtos">Cancelar</Link>
+        <button className="button button-outline" type="submit" name="intent" value="save" disabled={pending} onClick={() => setIntent("save")}>
+          {pending && intent === "save" ? "Salvando…" : "Salvar produto"}
+        </button>
+        <button className="button button-primary" type="submit" name="intent" value="publish" disabled={pending} onClick={() => setIntent("publish")}>
+          {pending && intent === "publish" ? "Publicando…" : "Publicar"}
+        </button>
+      </div>
+    </form>
+  );
 }
 
 function makeSlug(value: string) {

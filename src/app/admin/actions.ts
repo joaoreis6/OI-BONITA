@@ -132,7 +132,7 @@ export async function createProductAction(_state: AdminActionState, formData: Fo
     for (const path of productPaths) revalidatePath(path);
     revalidatePublicCatalog();
     revalidatePath("/admin/produtos/novo");
-    redirect(`/admin/produtos/${product.id}?salvo=1`);
+    redirect(`/admin/produtos/${product.id}?${parsed.data.isPublished ? "publicado=1" : "salvo=1"}`);
   } catch (error) {
     if (isRedirectError(error)) throw error;
     if (isUniqueConstraint(error)) return invalid("Já existe um produto com esse slug.");
@@ -170,7 +170,7 @@ export async function updateProductAction(_state: AdminActionState, formData: Fo
   for (const path of productPaths) revalidatePath(path);
   revalidatePublicCatalog();
   revalidatePath(`/admin/produtos/${id}`);
-  redirect(`/admin/produtos/${id}?salvo=1`);
+  redirect(`/admin/produtos/${id}?${parsed.data.isPublished ? "publicado=1" : "salvo=1"}`);
 }
 
 export async function archiveProductAction(formData: FormData): Promise<void> {
@@ -272,7 +272,7 @@ function parseProductForm(formData: FormData) {
   return {
     name: formData.get("name"), slug: formData.get("slug"), description: formData.get("description"), price: formData.get("price"),
     categoryId: formData.get("categoryId"), stock: formData.get("stock"), availability: formData.get("availability"),
-    isPublished: formData.get("isPublished") === "on",
+    isPublished: formData.get("intent") === "publish",
   };
 }
 

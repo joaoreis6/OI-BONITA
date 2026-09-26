@@ -142,7 +142,12 @@ body {
 .admin-image-hint h2 { margin: 0; color: var(--color-wine); font-family: var(--font-editorial); font-size: 1.35rem; font-weight: 400; }
 .admin-image-hint .admin-muted { margin: 8px 0 0; max-width: 560px; }
 .admin-image-upload { display: grid; gap: 14px; margin-top: 19px; border-top: 1px solid var(--color-border); padding-top: 19px; }
-.admin-image-upload-prominent { margin-top: 0; border-top: 0; padding-top: 0; border: 1px dashed #ddcdd4; border-radius: 10px; padding: 18px; background: #fbf5f7; }
+.admin-image-upload-prominent { margin-top: 0; border-top: 0; padding-top: 0; border: 1px dashed #ddcdd4; border-radius: 10px; padding: 28px 18px; background: #fbf5f7; place-items: center; text-align: center; }
+.admin-photo-picker-btn { width: min(100%, 420px); min-height: 46px; justify-content: center; cursor: pointer; }
+.admin-photo-picker-hint { margin: 0; color: var(--color-muted); font-size: .72rem; line-height: 1.5; }
+.admin-photo-selected { display: grid; gap: 10px; width: min(100%, 420px); }
+.admin-photo-selected-name { margin: 0; overflow: hidden; color: var(--color-wine); font-size: .82rem; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+.admin-photo-selected-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 16px; }
 .admin-image-upload-fields { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 13px; }
 .admin-image-upload label { display: grid; align-content: start; gap: 7px; color: #51434a; font-size: .77rem; font-weight: 700; }
 .admin-image-upload input { width: 100%; min-width: 0; min-height: 43px; border: 1px solid #ddcdd4; border-radius: 7px; padding: 9px; background: var(--color-white); color: var(--color-text); font: inherit; font-size: .77rem; }
@@ -150,6 +155,7 @@ body {
 .admin-image-upload label small { color: var(--color-muted); font-size: .69rem; font-weight: 400; line-height: 1.5; }
 .admin-image-upload .button { justify-self: start; min-height: 43px; }
 .admin-upload-progress { margin: -5px 0 0; color: var(--color-muted); font-size: .75rem; }
+.admin-form-save-hint { margin: 0; color: var(--color-muted); font-size: .76rem; line-height: 1.55; text-align: right; }
 .admin-form-actions { display: flex; justify-content: flex-end; gap: 10px; }
 .admin-form .button { min-height: 44px; }
 .admin-form .button:disabled { opacity: .65; cursor: wait; }

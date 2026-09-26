@@ -9,7 +9,7 @@ import { ProductImageManager } from "@/app/admin/product-image-manager";
 export const metadata: Metadata = { title: "Editar produto", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
 
-export default async function EditProductPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ salvo?: string; imagem?: string }> }) {
+export default async function EditProductPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ salvo?: string; publicado?: string; imagem?: string }> }) {
   await requireAdmin();
   const { id } = await params;
   const query = await searchParams;
@@ -22,7 +22,8 @@ export default async function EditProductPage({ params, searchParams }: { params
     ? categories
     : [...categories, { id: product.categoryId, name: product.category.name }];
   return <><AdminPageHeading eyebrow="Catálogo" title="Editar produto" description="Atualize as informações do produto." />
-    {query.salvo && <Notice>{product.images.length === 0 ? "Produto salvo. Cadastre a foto do produto na seção abaixo." : "Produto salvo com sucesso."}</Notice>}
+    {query.publicado && <Notice>{product.images.length === 0 ? "Produto publicado. Cadastre a foto na seção abaixo para exibir no catálogo." : "Produto publicado na loja."}</Notice>}
+    {query.salvo && !query.publicado && <Notice>{product.images.length === 0 ? "Rascunho salvo. Cadastre a foto abaixo ou publique quando estiver pronta." : "Rascunho salvo. Publique quando quiser exibir na loja."}</Notice>}
     {query.imagem === "adicionada" && <Notice>Imagem enviada e adicionada à galeria.</Notice>}
     {query.imagem === "ordem-salva" && <Notice>Ordem salva. A primeira foto está definida como imagem principal.</Notice>}
     {query.imagem === "removida" && <Notice>Imagem removida da galeria.</Notice>}
