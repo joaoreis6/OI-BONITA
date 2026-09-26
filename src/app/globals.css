@@ -1180,7 +1180,8 @@ select {
 .admin-login-form input:focus { border-color: var(--color-primary); outline: 2px solid var(--color-primary-soft); }
 .admin-login-form button { width: 100%; margin-top: 8px; cursor: pointer; }
 .admin-login-form button:disabled { cursor: wait; opacity: .7; }
-.admin-login-error { margin: 3px 0; color: #a32030; font-size: .78rem; line-height: 1.5; }
+.admin-login-error, .admin-field-error { margin: 3px 0; color: #a32030; font-size: .78rem; line-height: 1.5; }
+.admin-success { margin: 3px 0; color: #1f6b45; font-size: .78rem; line-height: 1.5; }
 .utility-page { min-height: 45vh; padding-top: 58px; }
 .utility-page-heading { margin-bottom: 35px; }
 .utility-page-heading .eyebrow { margin: 0 0 10px; }

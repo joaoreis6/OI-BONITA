@@ -19,8 +19,39 @@ function deriveKey(password: string, salt: Buffer, keyLength: number) {
 
 export const adminLoginSchema = z.object({
   email: z.string().trim().max(254).pipe(z.email()).transform((email) => email.toLowerCase()),
-  password: z.string().min(12).max(128),
+  password: z.string().min(8).max(128),
 });
+
+function emptyToUndefined(value: unknown) {
+  if (typeof value !== "string") return value;
+  const trimmed = value.trim();
+  return trimmed === "" ? undefined : trimmed;
+}
+
+export const updateAdminCredentialsSchema = z
+  .object({
+    currentPassword: z.string().min(8).max(128),
+    newEmail: z.preprocess(
+      emptyToUndefined,
+      z.string().trim().max(254).pipe(z.email()).transform((email) => email.toLowerCase()).optional(),
+    ),
+    newPassword: z.preprocess(emptyToUndefined, z.string().min(8).max(128).optional()),
+    confirmPassword: z.preprocess(emptyToUndefined, z.string().optional()),
+  })
+  .superRefine((data, ctx) => {
+    const changingEmail = Boolean(data.newEmail);
+    const changingPassword = Boolean(data.newPassword);
+    if (!changingEmail && !changingPassword) {
+      ctx.addIssue({ code: "custom", message: "Informe um novo e-mail ou uma nova senha.", path: ["_form"] });
+    }
+    if (changingPassword) {
+      if (!data.confirmPassword) {
+        ctx.addIssue({ code: "custom", message: "Confirme a nova senha.", path: ["confirmPassword"] });
+      } else if (data.newPassword !== data.confirmPassword) {
+        ctx.addIssue({ code: "custom", message: "As senhas não coincidem.", path: ["confirmPassword"] });
+      }
+    }
+  });
 
 export type AdminAuthRecord = {
   id: string;

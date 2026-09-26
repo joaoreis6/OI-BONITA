@@ -6,6 +6,7 @@ import { ProductStatus } from "@/generated/prisma/enums";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { getPrisma } from "@/lib/prisma";
 import { categoryInputSchema, productInputSchema } from "@/schemas/admin-catalog";
+import { hashAdminPassword, updateAdminCredentialsSchema, verifyAdminPassword } from "@/services/admin-auth-service";
 import { isCompleteProductImageOrder, MAX_PRODUCT_IMAGES, ProductImageValidationError, productImagePositions, removeStoredProductImage, restoreStoredProductImage, storeValidatedProductImage, validateProductImageFile } from "@/services/product-image-storage";
 
 export type AdminActionState = { error?: string; fieldErrors?: Record<string, string[]>; success?: string };
@@ -29,6 +30,53 @@ function isUniqueConstraint(error: unknown) {
 }
 
 function invalid(message: string): AdminActionState { return { error: message }; }
+
+export async function updateAdminCredentialsAction(_state: AdminActionState, formData: FormData): Promise<AdminActionState> {
+  const admin = await requireAdmin();
+  const parsed = updateAdminCredentialsSchema.safeParse({
+    currentPassword: formData.get("currentPassword"),
+    newEmail: formData.get("newEmail"),
+    newPassword: formData.get("newPassword"),
+    confirmPassword: formData.get("confirmPassword"),
+  });
+  if (!parsed.success) return { fieldErrors: fieldErrors(parsed.error.issues) };
+
+  const record = await getPrisma().admin.findUnique({
+    where: { id: admin.id },
+    select: { id: true, email: true, passwordHash: true },
+  });
+  if (!record) return invalid("Sessão inválida. Entre novamente no painel.");
+
+  const currentPasswordMatches = await verifyAdminPassword(parsed.data.currentPassword, record.passwordHash);
+  if (!currentPasswordMatches) return { fieldErrors: { currentPassword: ["Senha atual incorreta."] } };
+
+  const data: { email?: string; passwordHash?: string } = {};
+  if (parsed.data.newEmail && parsed.data.newEmail !== record.email) {
+    const duplicate = await getPrisma().admin.findUnique({ where: { email: parsed.data.newEmail }, select: { id: true } });
+    if (duplicate && duplicate.id !== record.id) return { fieldErrors: { newEmail: ["Este e-mail já está em uso."] } };
+    data.email = parsed.data.newEmail;
+  }
+  if (parsed.data.newPassword) data.passwordHash = await hashAdminPassword(parsed.data.newPassword);
+  if (!data.email && !data.passwordHash) return { fieldErrors: { _form: ["Nenhuma alteração foi informada."] } };
+
+  try {
+    await getPrisma().admin.update({
+      where: { id: record.id },
+      data: { ...data, failedLoginAttempts: 0, lockedUntil: null },
+    });
+  } catch (error) {
+    if (isUniqueConstraint(error)) return { fieldErrors: { newEmail: ["Este e-mail já está em uso."] } };
+    return invalid("Não foi possível atualizar o acesso. Tente novamente.");
+  }
+
+  revalidatePath("/admin/configuracoes");
+  const changedEmail = Boolean(data.email);
+  return {
+    success: changedEmail
+      ? "E-mail atualizado. Na próxima vez, entre com o novo e-mail."
+      : "Senha atualizada com sucesso.",
+  };
+}
 
 export async function createCategoryAction(_state: AdminActionState, formData: FormData): Promise<AdminActionState> {
   await requireAdmin();

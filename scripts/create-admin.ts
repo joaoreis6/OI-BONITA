@@ -51,7 +51,7 @@ function askHidden(question: string) {
 
 async function main() {
   const emailInput = await ask("E-mail do administrador: ");
-  const password = await askHidden("Senha (mínimo de 12 caracteres, entrada oculta): ");
+  const password = await askHidden("Senha (mínimo de 8 caracteres, entrada oculta): ");
   const confirmation = await askHidden("Confirme a senha: ");
   const parsed = adminLoginSchema.safeParse({ email: emailInput, password });
   if (!parsed.success) throw new Error("E-mail ou senha não atende aos requisitos mínimos.");

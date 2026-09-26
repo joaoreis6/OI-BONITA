@@ -37,7 +37,7 @@ export function AdminLoginForm() {
       <label htmlFor="admin-email">E-mail</label>
       <input id="admin-email" name="email" type="email" autoComplete="username" maxLength={254} required />
       <label htmlFor="admin-password">Senha</label>
-      <input id="admin-password" name="password" type="password" autoComplete="current-password" minLength={12} maxLength={128} required />
+      <input id="admin-password" name="password" type="password" autoComplete="current-password" minLength={8} maxLength={128} required />
       {error && <p className="admin-login-error" role="alert">{error}</p>}
       <button className="button button-primary" type="submit" disabled={pending}>
         {pending ? "Verificando…" : "Entrar"}

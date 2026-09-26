@@ -12,6 +12,7 @@
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "admin:create": "tsx scripts/create-admin.ts",
+    "admin:update-credentials": "tsx scripts/update-admin-credentials.ts",
     "db:seed-categories": "tsx scripts/seed-categories.ts",
     "production:setup": "tsx scripts/production-setup.ts",
     "lint": "eslint .",
