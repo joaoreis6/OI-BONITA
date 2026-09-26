@@ -157,6 +157,10 @@ body {
 .admin-upload-progress { margin: -5px 0 0; color: var(--color-muted); font-size: .75rem; }
 .admin-form-save-hint { margin: 0; color: var(--color-muted); font-size: .76rem; line-height: 1.55; text-align: right; }
 .admin-form-actions { display: flex; justify-content: flex-end; gap: 10px; }
+.admin-form-actions-with-delete { justify-content: space-between; align-items: center; flex-wrap: wrap; }
+.admin-form-actions-main { display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
+.admin-delete-button { border-color: #d7aab6; color: #9a2f44; }
+.admin-delete-button:hover { border-color: #9a2f44; background: #fff5f7; color: #7d2236; }
 .admin-form .button { min-height: 44px; }
 .admin-form .button:disabled { opacity: .65; cursor: wait; }
 .admin-category-create { position: sticky; top: 20px; }
@@ -213,8 +217,10 @@ body {
   .admin-image-gallery { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
   .admin-image-upload-fields { grid-template-columns: 1fr; }
   .admin-image-upload .button { width: 100%; }
-  .admin-form-actions { flex-direction: column-reverse; }
+  .admin-form-actions-with-delete { flex-direction: column; align-items: stretch; }
+  .admin-form-actions-main { flex-direction: column-reverse; width: 100%; }
   .admin-form-actions .button { width: 100%; }
+  .admin-form-actions-main .button { width: 100%; }
 }
 
 @media (prefers-reduced-motion: reduce) { .admin-spinner { animation: none; } }

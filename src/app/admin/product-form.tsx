@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useActionState, useState } from "react";
 import { createProductAction, updateProductAction, type AdminActionState } from "@/app/admin/actions";
+import { ConfirmArchiveForm } from "@/app/admin/confirm-archive-form";
 import { Notice } from "@/app/admin/admin-ui";
 
 type ProductValue = { id?: string; name: string; slug: string; description: string; price: string; categoryId: string; stock: number; availability: string; isPublished: boolean };
@@ -31,14 +32,25 @@ export function ProductForm({ categories, product }: { categories: { id: string;
       {state.error && <Notice tone="error">{state.error}</Notice>}
       {state.fieldErrors && <Notice tone="error">{Object.values(state.fieldErrors).flat()[0]}</Notice>}
       <p className="admin-form-save-hint">Salvar guarda o produto como rascunho. Publicar exibe na loja.</p>
-      <div className="admin-form-actions">
-        <Link className="button button-outline" href="/admin/produtos">Cancelar</Link>
-        <button className="button button-outline" type="submit" name="intent" value="save" disabled={pending} onClick={() => setIntent("save")}>
-          {pending && intent === "save" ? "Salvando…" : "Salvar produto"}
-        </button>
-        <button className="button button-primary" type="submit" name="intent" value="publish" disabled={pending} onClick={() => setIntent("publish")}>
-          {pending && intent === "publish" ? "Publicando…" : "Publicar"}
-        </button>
+      <div className={`admin-form-actions${product?.isPublished ? " admin-form-actions-with-delete" : ""}`}>
+        {product?.id && product.isPublished && (
+          <ConfirmArchiveForm
+            id={product.id}
+            label="Excluir produto"
+            pendingLabel="Excluindo…"
+            className="button button-outline admin-delete-button"
+            confirmMessage="Excluir este produto da loja? Ele sairá do catálogo e não aparecerá mais para os clientes."
+          />
+        )}
+        <div className="admin-form-actions-main">
+          <Link className="button button-outline" href="/admin/produtos">Cancelar</Link>
+          <button className="button button-outline" type="submit" name="intent" value="save" disabled={pending} onClick={() => setIntent("save")}>
+            {pending && intent === "save" ? "Salvando…" : "Salvar produto"}
+          </button>
+          <button className="button button-primary" type="submit" name="intent" value="publish" disabled={pending} onClick={() => setIntent("publish")}>
+            {pending && intent === "publish" ? "Publicando…" : "Publicar"}
+          </button>
+        </div>
       </div>
     </form>
   );

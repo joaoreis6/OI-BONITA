@@ -17,8 +17,8 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
   if (!products) return <><AdminPageHeading eyebrow="Catálogo" title="Produtos" description="Gerencie informações, estoque e publicação." action={{ href: "/admin/produtos/novo", label: "Adicionar produto" }} /><Notice tone="error">Não foi possível carregar os produtos. Verifique a conexão do banco de dados.</Notice></>;
   return <>
     <AdminPageHeading eyebrow="Catálogo" title="Produtos" description="Gerencie informações, estoque e publicação." action={{ href: "/admin/produtos/novo", label: "Adicionar produto" }} />
-    {query.arquivado && <Notice>Produto arquivado.</Notice>}
-    {query.falha && <Notice tone="error">Não foi possível arquivar o produto. Atualize a página e tente novamente.</Notice>}
+    {query.arquivado && <Notice>Produto excluído da loja.</Notice>}
+    {query.falha && <Notice tone="error">Não foi possível excluir o produto. Atualize a página e tente novamente.</Notice>}
     {products.length === 0 ? <section className="admin-empty"><h2>Você ainda não cadastrou produtos.</h2><p>Quando adicionar um produto, ele aparecerá nesta lista.</p><Link className="button button-primary" href="/admin/produtos/novo">Adicionar produto</Link></section> :
       <div className="admin-product-list">{products.map((product) => <article className="admin-product-card" key={product.id}>
         {product.images[0] ? <div className="admin-product-thumb"><Image src={product.images[0].url} alt={product.images[0].altText || product.name} fill sizes="(max-width: 700px) 80px, 96px" unoptimized /></div> : <div className="admin-product-thumb admin-thumb-empty" aria-label="Sem imagem">Sem imagem</div>}
