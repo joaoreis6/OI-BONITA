@@ -2,7 +2,7 @@
 # https://docs.netlify.com/build/frameworks/framework-setup-guides/nextjs/overview/
 
 [build]
-  command = "pnpm build"
+  command = "corepack enable && corepack prepare pnpm@10.34.5 --activate && pnpm build"
   publish = ".next"
 
 [build.environment]
